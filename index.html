@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>The Period Pain Protocol — 12 Week Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Jost',sans-serif;background:#FAF7F2;color:#2C2820;min-height:100vh;font-size:14px;line-height:1.6;-webkit-text-size-adjust:100%}
+.header{background:#2C2820;color:#FAF7F2;padding:2.5rem 1.25rem 0;text-align:center}
+.header-eyebrow{font-weight:300;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#C4847A;margin-bottom:.75rem}
+.header h1{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(26px,7vw,40px);line-height:1.1;margin-bottom:.5rem}
+.header h1 em{font-style:italic;color:#C4847A}
+.header-sub{font-weight:300;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#9C9189;margin-bottom:1.5rem}
+.stats-bar{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid rgba(255,255,255,0.1);margin:0 -1.25rem}
+.stat{padding:.85rem .5rem;text-align:center}
+.stat-num{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;color:#FAF7F2;display:block;line-height:1}
+.stat-label{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#9C9189;margin-top:3px;display:block}
+.iphone-tip{background:#C4847A;color:#fff;font-size:12px;text-align:center;padding:.6rem 1rem;display:none;line-height:1.5}
+.week-nav{background:#F2EDE4;border-bottom:1px solid #DDD5C8;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:sticky;top:0;z-index:100}
+.week-nav::-webkit-scrollbar{display:none}
+.week-nav-inner{display:flex;padding:.6rem .75rem;gap:.4rem;width:max-content;min-width:100%}
+.nav-btn{padding:.4rem .85rem;border-radius:20px;border:1px solid #DDD5C8;background:transparent;font-family:'Jost',sans-serif;font-size:12px;font-weight:400;color:#5C5347;cursor:pointer;white-space:nowrap;letter-spacing:.04em;-webkit-appearance:none}
+.nav-btn.active{background:#2C2820;border-color:#2C2820;color:#FAF7F2}
+.nav-btn.done-some::after{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;background:#8A9E8C;margin-left:5px;vertical-align:middle;margin-bottom:1px}
+.main{padding:1.25rem;max-width:600px;margin:0 auto;padding-bottom:100px}
+.week-panel{display:none}
+.week-panel.active{display:block}
+.phase-banner{border-radius:10px;padding:.85rem 1rem;margin-bottom:1.25rem;display:flex;align-items:flex-start;gap:.75rem}
+.phase-banner.build{background:#EDD9D6}
+.phase-banner.master{background:#E8EDE8}
+.phase-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.phase-title{font-weight:500;font-size:13px;color:#2C2820;margin-bottom:2px}
+.phase-desc{font-size:12px;color:#5C5347;font-weight:300;line-height:1.5}
+.week-progress-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.week-h2{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;color:#2C2820;letter-spacing:-.01em}
+.week-sub{font-size:11px;color:#9C9189;letter-spacing:.06em;text-transform:uppercase;margin-top:1px}
+.week-pct-display{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:#2C2820;line-height:1}
+.week-pct-display span{font-size:14px;font-family:'Jost',sans-serif;font-weight:300;color:#9C9189}
+.progress-track{height:3px;background:#DDD5C8;border-radius:2px;margin-bottom:1.5rem;overflow:hidden}
+.progress-fill{height:100%;background:#8A9E8C;border-radius:2px;transition:width .3s ease}
+.section-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#9C9189;margin-bottom:.6rem;padding-left:2px}
+.habit-card{background:#fff;border:1px solid #DDD5C8;border-radius:12px;margin-bottom:.75rem;overflow:hidden}
+.habit-card.is-new{border-left:3px solid #C4847A}
+.habit-card.is-carry{border-left:3px solid #C8D8C9}
+.habit-header{padding:.85rem 1rem .7rem;display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem}
+.habit-info{flex:1;min-width:0}
+.habit-name{font-weight:500;font-size:13.5px;color:#2C2820;margin-bottom:3px;line-height:1.3}
+.habit-desc{font-size:11.5px;color:#5C5347;font-weight:300;line-height:1.5}
+.new-tag{flex-shrink:0;font-size:9px;letter-spacing:.1em;text-transform:uppercase;background:#EDD9D6;color:#8C4A43;padding:3px 8px;border-radius:10px;margin-top:1px;font-weight:500;white-space:nowrap}
+.wk-tag{flex-shrink:0;font-size:9px;letter-spacing:.08em;text-transform:uppercase;background:#F2EDE4;color:#9C9189;padding:3px 8px;border-radius:10px;margin-top:1px;white-space:nowrap}
+.day-row{padding:.5rem 1rem .85rem;border-top:1px solid #F2EDE4}
+.day-row-inner{display:flex;align-items:center;gap:5px}
+.day-lbl{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#9C9189;width:24px;flex-shrink:0;text-align:center}
+.days-flex{display:flex;gap:4px;flex:1}
+.day-btn{flex:1;aspect-ratio:1/1;max-width:40px;min-width:26px;border-radius:8px;border:1px solid #DDD5C8;background:#FAF7F2;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none;position:relative;transition:background .15s,border-color .15s}
+.day-btn .dl{font-size:9px;color:#9C9189;pointer-events:none;user-select:none}
+.day-btn.ticked{background:#8A9E8C;border-color:#4A6B4D}
+.day-btn.ticked .dl{display:none}
+.day-btn.ticked::after{content:'';display:block;width:8px;height:5px;border-left:1.5px solid #fff;border-bottom:1.5px solid #fff;transform:rotate(-45deg) translateY(-1px)}
+.optional-box{background:#F2EDE4;border:1px dashed #DDD5C8;border-radius:10px;padding:.85rem 1rem;margin-bottom:1.25rem}
+.optional-box strong{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#9C9189;display:block;margin-bottom:4px;font-weight:500}
+.optional-box p{font-size:11.5px;color:#5C5347;font-weight:300;line-height:1.6}
+.mastery-note{background:#E8EDE8;border:1px solid #C4D4C4;border-radius:12px;padding:1rem 1.1rem;margin-bottom:1.5rem}
+.mastery-note p{font-size:12.5px;color:#4A6B4D;line-height:1.6;font-weight:300}
+.mastery-note strong{font-weight:500}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #DDD5C8;display:flex;padding:.65rem 1rem;padding-bottom:calc(.65rem + env(safe-area-inset-bottom));gap:.6rem;z-index:200}
+.btn-prev,.btn-next{padding:.75rem 1rem;border-radius:10px;border:1px solid #DDD5C8;background:transparent;font-family:'Jost',sans-serif;font-size:13px;font-weight:400;color:#5C5347;cursor:pointer;letter-spacing:.04em;-webkit-appearance:none;flex:1}
+.btn-next{background:#2C2820;border-color:#2C2820;color:#FAF7F2;flex:2}
+.btn-prev:disabled{opacity:.3;pointer-events:none}
+.btn-next:disabled{opacity:.3;pointer-events:none}
+.reset-wrap{text-align:center;padding:1rem 0 .5rem}
+.reset-btn{font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#9C9189;background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:3px;-webkit-appearance:none}
+@media(min-width:601px){.bottom-nav{max-width:600px;left:50%;transform:translateX(-50%);border-left:1px solid #DDD5C8;border-right:1px solid #DDD5C8}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">Nutrition by Jessie</div>
+  <h1>The <em>Period Pain</em><br>Protocol</h1>
+  <div class="header-sub">12 Week Habit Tracker</div>
+  <div class="stats-bar">
+    <div class="stat"><span class="stat-num" id="gChecked">0</span><span class="stat-label">Check-ins</span></div>
+    <div class="stat"><span class="stat-num" id="gPct">0%</span><span class="stat-label">Overall</span></div>
+    <div class="stat"><span class="stat-num" id="gStreak">0</span><span class="stat-label">Weeks ≥70%</span></div>
+  </div>
+</div>
+
+<div class="iphone-tip" id="iphoneTip">
+  💡 <strong>iPhone tip:</strong> Keep this tab open in Safari so your ticks are saved. To use like an app, tap Share → Add to Home Screen.
+</div>
+
+<nav class="week-nav"><div class="week-nav-inner" id="weekNav"></div></nav>
+<div class="main" id="main"></div>
+
+<div class="bottom-nav">
+  <button class="btn-prev" id="btnPrev" onclick="goWeek(-1)">← Prev</button>
+  <button class="btn-next" id="btnNext" onclick="goWeek(1)">Next week →</button>
+</div>
+
+<script>
+var HABITS=[
+  {id:1,week:1,name:"Balanced Meals",desc:"Build each meal with protein, fibre, fats, and carbohydrates using your foods-to-include list."},
+  {id:2,week:1,name:"Timing of Food & Caffeine",desc:"Eat within one hour of waking and before consuming caffeine to stabilise blood sugar."},
+  {id:3,week:1,name:"Circadian Rhythm & Light Exposure",desc:"10 minutes of natural light within 30 min of waking, at midday, and during sunset."},
+  {id:4,week:2,name:"Sleep Quality & Timing",desc:"Consistent sleep/wake times, limit screens before bed, cool & dark room, wind-down routine."},
+  {id:5,week:2,name:"Movement",desc:"30 minutes of walking daily. Yoga, stretching, swimming, or cycling can also be incorporated."},
+  {id:6,week:2,name:"Calming Practices",desc:"Three short, relaxing activities per day to activate the parasympathetic nervous system (see module 5)."},
+  {id:7,week:3,name:"Fibre & Liver Supporting Foods",desc:"Fibre at each meal. Focus on cruciferous veg (broccoli, kale, cabbage) and sulfur-rich foods (onion, garlic, protein)."},
+  {id:8,week:3,name:"Probiotic Rich Foods",desc:"Include fermented foods like sauerkraut, kimchi, yoghurt, or kefir daily."},
+  {id:9,week:3,name:"Mindful Eating",desc:"Phone away, TV off at meals. Chew thoroughly — at least 30 chews per mouthful."},
+  {id:10,week:4,name:"Slow Down & Be Intentional",desc:"Reduce rushing. Use slow breathing, short pauses, or day planning to support hormone regulation."},
+  {id:11,week:4,name:"Hydration",desc:"Aim for 2-3 litres of fluids per day including water and herbal teas."},
+  {id:12,week:4,name:"Reducing Toxic Load",desc:"Mini-audit of foods, cleaning, and beauty products using your toxins-to-reduce list. Prioritise the dirty dozen."}
+];
+var OPTIONAL={
+  1:"Consider reducing dairy or gluten if you suspect they affect digestion, bloating, fatigue, or menstrual pain.",
+  2:"Resistance training 1-3 times per week.",
+  3:"Consider reducing dairy or gluten if you suspect they affect digestion, bloating, fatigue, or menstrual pain.",
+  4:"Magnesium bath, sauna, or herbal teas (like dandelion or milk thistle) to support liver."
+};
+var DAYS=['M','T','W','T','F','S','S'];
+var TOTAL=12;
+var cur=1;
+var S={};
+var canSave=false;
+
+// detect iPhone
+var isIphone=/iPhone|iPod/.test(navigator.userAgent);
+if(isIphone){
+  document.getElementById('iphoneTip').style.display='block';
+}
+
+// try localStorage
+try{
+  localStorage.setItem('_test','1');
+  localStorage.removeItem('_test');
+  canSave=true;
+  var r=localStorage.getItem('ppv3');
+  if(r)S=JSON.parse(r);
+}catch(e){canSave=false;}
+
+function sk(w,h,d){return 'p'+w+'h'+h+'d'+d;}
+function save(){if(canSave){try{localStorage.setItem('ppv3',JSON.stringify(S));}catch(e){}}}
+function habitsFor(w){return w<=4?HABITS.filter(function(h){return h.week<=w;}):HABITS.slice();}
+function weekDone(w){var hh=habitsFor(w),done=0;hh.forEach(function(h){DAYS.forEach(function(_,d){if(S[sk(w,h.id,d)])done++;});});return done;}
+function weekPct(w){var hh=habitsFor(w),total=hh.length*7,done=weekDone(w);return total?Math.round(done/total*100):0;}
+
+function tick(w,hid,d,el){
+  var k=sk(w,hid,d);
+  S[k]=!S[k];
+  save();
+  if(S[k]){el.classList.add('ticked');}else{el.classList.remove('ticked');}
+  updateStats();
+  updateWeekHeader(w);
+  updateNav();
+}
+
+function updateStats(){
+  var td=0,tp=0,good=0;
+  for(var w=1;w<=TOTAL;w++){
+    var hh=habitsFor(w),t=hh.length*7,d=weekDone(w);
+    td+=d;tp+=t;
+    if(t&&Math.round(d/t*100)>=70)good++;
+  }
+  document.getElementById('gChecked').textContent=td;
+  document.getElementById('gPct').textContent=(tp?Math.round(td/tp*100):0)+'%';
+  document.getElementById('gStreak').textContent=good;
+}
+
+function updateWeekHeader(w){
+  var pct=weekPct(w);
+  var pe=document.getElementById('pct-'+w);
+  var pf=document.getElementById('pf-'+w);
+  var ws=document.getElementById('wsub-'+w);
+  var hh=habitsFor(w);
+  var done=weekDone(w);
+  if(pe)pe.textContent=pct;
+  if(pf)pf.style.width=pct+'%';
+  if(ws)ws.textContent=hh.length+' habit'+(hh.length!==1?'s':'')+' · '+done+'/'+(hh.length*7)+' check-ins';
+}
+
+function updateNav(){
+  for(var w=1;w<=TOTAL;w++){
+    var btn=document.getElementById('nb-'+w);
+    if(!btn)continue;
+    btn.className='nav-btn'+(w===cur?' active':'')+(weekDone(w)>0?' done-some':'');
+  }
+}
+
+function goWeek(dir){
+  var next=cur+dir;
+  if(next<1||next>TOTAL)return;
+  document.getElementById('wp-'+cur).classList.remove('active');
+  cur=next;
+  document.getElementById('wp-'+cur).classList.add('active');
+  updateNav();
+  scrollNavTo(cur);
+  document.getElementById('btnPrev').disabled=cur===1;
+  document.getElementById('btnNext').disabled=cur===TOTAL;
+  document.getElementById('btnNext').textContent=cur===TOTAL?'Final week done!':'Next week →';
+  window.scrollTo(0,0);
+}
+
+function setWeek(w){
+  document.getElementById('wp-'+cur).classList.remove('active');
+  cur=w;
+  document.getElementById('wp-'+cur).classList.add('active');
+  updateNav();
+  scrollNavTo(w);
+  document.getElementById('btnPrev').disabled=cur===1;
+  document.getElementById('btnNext').disabled=cur===TOTAL;
+  document.getElementById('btnNext').textContent=cur===TOTAL?'Final week done!':'Next week →';
+  window.scrollTo(0,0);
+}
+
+function scrollNavTo(w){
+  var btn=document.getElementById('nb-'+w);
+  if(btn)btn.scrollIntoView({inline:'center',behavior:'smooth',block:'nearest'});
+}
+
+function resetWeek(w){
+  if(!confirm('Reset all check-ins for Week '+w+'?'))return;
+  for(var k in S){if(k.indexOf('p'+w+'h')===0)delete S[k];}
+  save();
+  var panel=document.getElementById('wp-'+w);
+  if(panel){panel.querySelectorAll('.day-btn.ticked').forEach(function(b){b.classList.remove('ticked');});}
+  updateStats();
+  updateWeekHeader(w);
+  updateNav();
+}
+
+function habitCard(h,w,isNew){
+  var cls=isNew?'is-new':'is-carry';
+  var tag=isNew?'<span class="new-tag">New</span>':'<span class="wk-tag">Wk '+h.week+'</span>';
+  var days='';
+  DAYS.forEach(function(d,di){
+    var ticked=S[sk(w,h.id,di)]?'ticked':'';
+    days+='<button class="day-btn '+ticked+'" onclick="tick('+w+','+h.id+','+di+',this)"><span class="dl">'+d+'</span></button>';
+  });
+  return '<div class="habit-card '+cls+'">'+
+    '<div class="habit-header"><div class="habit-info"><div class="habit-name">'+h.name+'</div><div class="habit-desc">'+h.desc+'</div></div>'+tag+'</div>'+
+    '<div class="day-row"><div class="day-row-inner"><div class="day-lbl">Days</div><div class="days-flex">'+days+'</div></div></div>'+
+    '</div>';
+}
+
+function buildWeek(w){
+  var isBuild=w<=4;
+  var habits=habitsFor(w);
+  var pct=weekPct(w);
+  var done=weekDone(w);
+  var total=habits.length*7;
+  var html='';
+
+  if(isBuild){
+    html+='<div class="phase-banner build"><div class="phase-icon">&#x1F331;</div><div><div class="phase-title">Build phase &mdash; Week '+w+' of 4</div><div class="phase-desc">3 new strategies introduced this week, building on all previous habits.</div></div></div>';
+  }else{
+    html+='<div class="phase-banner master"><div class="phase-icon">&#x2736;</div><div><div class="phase-title">Mastery phase &mdash; Week '+w+' of 12</div><div class="phase-desc">All 12 strategies active. Aim for consistency, not perfection.</div></div></div>';
+  }
+
+  html+='<div class="week-progress-row"><div><div class="week-h2">Week '+w+'</div><div class="week-sub" id="wsub-'+w+'">'+habits.length+' habit'+(habits.length!==1?'s':'')+' &middot; '+done+'/'+total+' check-ins</div></div><div class="week-pct-display"><span id="pct-'+w+'">'+pct+'</span><span>%</span></div></div>';
+  html+='<div class="progress-track"><div class="progress-fill" id="pf-'+w+'" style="width:'+pct+'%"></div></div>';
+
+  if(!isBuild){
+    html+='<div class="mastery-note"><p><strong>You\'ve built all 12 habits.</strong> These next 8 weeks are about deepening consistency and noticing how your body responds. Small daily actions compound powerfully over time.</p></div>';
+  }
+
+  if(isBuild){
+    var newOnes=habits.filter(function(h){return h.week===w;});
+    var carried=habits.filter(function(h){return h.week<w;});
+    if(newOnes.length){
+      html+='<div class="section-label">New this week</div>';
+      newOnes.forEach(function(h){html+=habitCard(h,w,true);});
+    }
+    if(carried.length){
+      html+='<div class="section-label" style="margin-top:.75rem">Carrying forward</div>';
+      carried.forEach(function(h){html+=habitCard(h,w,false);});
+    }
+  }else{
+    [1,2,3,4].forEach(function(wg){
+      var group=habits.filter(function(h){return h.week===wg;});
+      if(!group.length)return;
+      html+='<div class="section-label" style="margin-top:.5rem">Week '+wg+' habits</div>';
+      group.forEach(function(h){html+=habitCard(h,w,false);});
+    });
+  }
+
+  if(isBuild&&OPTIONAL[w]){
+    html+='<div class="optional-box"><strong>Optional add-on</strong><p>'+OPTIONAL[w]+'</p></div>';
+  }
+
+  html+='<div class="reset-wrap"><button class="reset-btn" onclick="resetWeek('+w+')">Reset week '+w+'</button></div>';
+  return html;
+}
+
+function buildNav(){
+  var nav=document.getElementById('weekNav');
+  var html='';
+  for(var w=1;w<=TOTAL;w++){
+    html+='<button id="nb-'+w+'" class="nav-btn'+(w===1?' active':'')+(weekDone(w)>0?' done-some':'')+'" onclick="setWeek('+w+')">Week '+w+'</button>';
+  }
+  nav.innerHTML=html;
+}
+
+function buildAll(){
+  var main=document.getElementById('main');
+  var html='';
+  for(var w=1;w<=TOTAL;w++){
+    html+='<div class="week-panel'+(w===1?' active':'')+'" id="wp-'+w+'">'+buildWeek(w)+'</div>';
+  }
+  main.innerHTML=html;
+}
+
+buildNav();
+buildAll();
+updateStats();
+document.getElementById('btnPrev').disabled=true;
+</script>
+</body>
+</html>
